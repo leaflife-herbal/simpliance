@@ -15,6 +15,9 @@ from .routers import admin, auth, home
 
 @asynccontextmanager
 async def lifespan(_app):
+           from . import models  # noqa: F401
+       from .db import Base
+       Base.metadata.create_all(engine)
     try:
         print("bootstrap:", bootstrap.from_env())
     except Exception as e:   # never block start-up (e.g. weak password in env var); the message shows in Render logs
