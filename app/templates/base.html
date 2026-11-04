@@ -8,6 +8,8 @@
   <a class="brand" href="/">{{ APP_NAME }}</a>
   <nav>
     <a href="/">Home</a>
+    <a href="/employees">Employees</a><a href="/monthly">Monthly processing</a><a href="/attendance">Attendance</a>
+    {% if user.can_view_salary %}<a href="/salary">Salary</a>{% endif %}
     {% if user.is_super %}
       <a href="/admin/organisations">Organisations</a><a href="/admin/companies">Companies</a>
       <a href="/admin/users">Users</a><a href="/admin/audit">Audit log</a>

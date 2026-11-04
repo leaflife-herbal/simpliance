@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from sqlalchemy import (BigInteger, Boolean, CheckConstraint, Column, Date, DateTime, ForeignKey, Index, Integer,
+from sqlalchemy import (BigInteger, Boolean, CheckConstraint, Column, Date, DateTime, Float, ForeignKey, Index, Integer,
                         Numeric, String, Text, UniqueConstraint, func, text)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
-from .core.specs import COMPANY_FIELDS
+from .core.specs import COMPANY_FIELDS, EMPLOYEE_FIELDS
 from .db import Base
 
 ROLE_SUPER, ROLE_OPERATOR, ROLE_VIEWER = "SUPER_ADMIN", "OPERATOR", "VIEWER"
@@ -118,3 +118,101 @@ class AuditLog(Base):
     entity_id = Column(Integer)
     detail = Column(JSONType)
     ip = Column(String(45))
+
+
+class Employee(Base):
+    __tablename__ = "employees"
+    __table_args__ = (UniqueConstraint("company_id", "emp_code", name="uq_emp_code"),)
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)
+    locals().update({f.key: spec_column(f) for f in EMPLOYEE_FIELDS})
+    created_by = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True))
+
+
+class MonthlyInput(Base):
+    __tablename__ = "monthly_inputs"
+    __table_args__ = (UniqueConstraint("employee_id", "year", "month", name="uq_monthly_input"),)
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)
+    employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
+    year = Column(Integer, nullable=False)
+    month = Column(Integer, nullable=False)
+    days_worked = Column(Numeric(4, 1), nullable=False, default=0)
+    ot_hours = Column(Numeric(6, 2), nullable=False, default=0)
+    advance = Column(Numeric(12, 2), nullable=False, default=0)
+    other_deduction = Column(Numeric(12, 2), nullable=False, default=0)
+    remarks = Column(String(255))
+
+
+class Attendance(Base):
+    __tablename__ = "attendance"
+    __table_args__ = (UniqueConstraint("employee_id", "att_date", name="uq_attendance_day"),
+                      Index("ix_att_company_date", "company_id", "att_date"))
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
+    employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
+    att_date = Column(Date, nullable=False)
+    status = Column(String(2), nullable=False)
+    in_time = Column(String(5))
+    out_time = Column(String(5))
+    is_generated = Column(Boolean, nullable=False, default=True)
+
+
+class SalaryRun(Base):
+    __tablename__ = "salary_runs"
+    __table_args__ = (UniqueConstraint("company_id", "year", "month", name="uq_salary_run"),)
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)
+    year = Column(Integer, nullable=False)
+    month = Column(Integer, nullable=False)
+    status = Column(String(5), nullable=False, default="DRAFT")
+    calculated_at = Column(DateTime(timezone=True))
+    calculated_by = Column(Integer, ForeignKey("users.id"))
+    finalised_at = Column(DateTime(timezone=True))
+
+
+class SalaryLine(Base):
+    """Snapshot of one employee's salary for a month (rates and every amount), so history never changes."""
+    __tablename__ = "salary_lines"
+    __table_args__ = (UniqueConstraint("run_id", "employee_id", name="uq_salary_line"),)
+    id = Column(Integer, primary_key=True)
+    run_id = Column(Integer, ForeignKey("salary_runs.id", ondelete="CASCADE"), nullable=False)
+    company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)
+    employee_id = Column(Integer, ForeignKey("employees.id"), nullable=False)
+    emp_code = Column(String(255))
+    emp_name = Column(String(255))
+    designation = Column(String(255))
+    department = Column(String(255))
+    uan = Column(String(255))
+    esic_no = Column(String(255))
+    salary_type = Column(String(10))
+    days_in_month = Column(Integer)
+    divisor = Column(Integer)
+    present_days = Column(Float)
+    paid_leave = Column(Float)
+    weekly_offs = Column(Float)
+    absent_days = Column(Float)
+    paid_days = Column(Float)
+    ot_hours = Column(Float)
+    rate_basic = Column(Float)
+    rate_da = Column(Float)
+    rate_hra = Column(Float)
+    rate_other = Column(Float)
+    earned_basic = Column(Integer)
+    earned_da = Column(Integer)
+    earned_hra = Column(Integer)
+    earned_other = Column(Integer)
+    ot_amount = Column(Integer)
+    gross = Column(Integer)
+    pf_employee = Column(Integer)
+    esi_employee = Column(Integer)
+    prof_tax = Column(Integer)
+    advance = Column(Integer)
+    other_deduction = Column(Integer)
+    total_deductions = Column(Integer)
+    net_pay = Column(Integer)
+    pf_employer = Column(Integer)
+    esi_employer = Column(Integer)
+    warning = Column(String(255))

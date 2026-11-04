@@ -53,7 +53,10 @@ def num(v, decimals=2):
     """Plain number text without trailing zeros (for days, hours)."""
     if v is None:
         return ""
-    f = float(v)
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return str(v)   # e.g. text the user typed that failed validation
     return str(int(f)) if f == int(f) else f"{f:.{decimals}f}".rstrip("0").rstrip(".")
 
 

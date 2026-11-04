@@ -10,8 +10,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from . import bootstrap, services, settings
 from .db import engine
-from .deps import LoginRequired, PasswordChangeRequired
-from .routers import admin, auth, home
+from .deps import LoginRequired, NoCompany, PasswordChangeRequired, flash
+from .routers import admin, auth, home, work
 
 @asynccontextmanager
 async def lifespan(_app):
@@ -54,6 +54,12 @@ async def _pw_required(request, exc):
     return RedirectResponse("/account/password", 303)
 
 
+@app.exception_handler(NoCompany)
+async def _no_company(request, exc):
+    flash(request, "Choose a working company first.", "err")
+    return RedirectResponse("/", 303)
+
+
 @app.exception_handler(services.Denied)
 async def _denied(request, exc):
     return HTMLResponse(f"<h3>Not permitted</h3><p>{html.escape(str(exc))}</p><p><a href='/'>Home</a></p>", status_code=403)
@@ -76,3 +82,4 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(auth.router)
 app.include_router(home.router)
 app.include_router(admin.router)
+app.include_router(work.router)
