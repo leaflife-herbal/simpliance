@@ -1,6 +1,0 @@
-{% extends "base.html" %}{% block title %}Audit log{% endblock %}
-{% block body %}
-<h2>Audit log (latest 500)</h2>
-<table><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>Id</th><th>Detail</th><th>IP</th></tr>
-{% for r in rows %}<tr><td>{{ r.ts.strftime('%d-%m-%Y %H:%M:%S') if r.ts else '' }}</td><td>{{ r.username }}</td><td>{{ r.action }}</td><td>{{ r.entity or '' }}</td><td>{{ r.entity_id or '' }}</td><td>{{ r.detail or '' }}</td><td>{{ r.ip or '' }}</td></tr>{% endfor %}</table>
-{% endblock %}
