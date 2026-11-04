@@ -11,6 +11,7 @@ Rules (stated assumptions):
 """
 from calendar import monthrange
 from datetime import date
+import random
 from math import floor
 
 from .specs import WEEKDAYS
@@ -27,7 +28,8 @@ def _spread(n_items, k):
     return {((2 * i + 1) * n_items) // (2 * k) for i in range(k)}
 
 
-def build_month(year, month, days_worked, weekly_off, shift_in, shift_out, joining=None, leaving=None):
+def build_month(year, month, days_worked, weekly_off, shift_in, shift_out, joining=None, leaving=None,
+                variation=0, seed=""):
     """Pure function. weekly_off is a weekday name. Returns list of dicts (one per calendar day)."""
     wo_idx = WEEKDAYS.index(weekly_off)
     n = monthrange(year, month)[1]
@@ -75,14 +77,23 @@ def build_month(year, month, days_worked, weekly_off, shift_in, shift_out, joini
                     break
     dur = minutes_between(shift_in, shift_out)
     half_out = m2t(t2m(shift_in) + dur // 2)
-    rows = []
+    rows, prev = [], None
     for d in days:
         st = status[d]
         tin = tout = None
-        if st in ("P", "PL"):
-            tin, tout = (shift_in, shift_out) if st == "P" else (None, None)
-        elif st == "HD":
-            tin, tout = shift_in, half_out
+        if st in ("P", "HD"):
+            early = late = 0
+            if variation > 0:
+                # Natural-looking, repeatable times: arrive 0..V min early, leave 0..V min late (so the full duty
+                # period is always covered), never the same pair two days running.
+                rng = random.Random(f"{seed}|{d.isoformat()}")
+                for _ in range(20):
+                    early, late = rng.randint(0, variation), rng.randint(0, variation)
+                    if (early, late) != prev:
+                        break
+                prev = (early, late)
+            tin = m2t(t2m(shift_in) - early)
+            tout = m2t(t2m(shift_out if st == "P" else half_out) + late)
         rows.append({"date": d.isoformat(), "status": st, "in_time": tin, "out_time": tout})
     return rows
 

@@ -1,7 +1,9 @@
-{% macro field(f, v, ro=False) %}
+{% macro field(f, v, ro=False, emps=[]) %}
 {% set d = 'disabled' if ro else '' %}
 <label class="fld"><span>{{ f.label }}{% if f.required %} *{% endif %}</span>
-{% if f.type == 'multiline' %}<textarea name="{{ f.key }}" rows="3" {{ d }}>{{ v }}</textarea>
+{% if f.readonly %}<input type="text" value="{{ v }}" readonly disabled class="auto" placeholder="(calculated on save)">
+{% elif f.type == 'employee' %}<select name="{{ f.key }}" {{ d }}><option value="">- none -</option>{% for e in emps %}<option value="{{ e.id }}" {% if v|string == e.id|string %}selected{% endif %}>{{ e.emp_code }} - {{ e.name }}</option>{% endfor %}</select>
+{% elif f.type == 'multiline' %}<textarea name="{{ f.key }}" rows="3" {{ d }}>{{ v }}</textarea>
 {% elif f.type == 'choice' %}<select name="{{ f.key }}" {{ d }}>{% if not f.required %}<option value=""></option>{% endif %}
   {% for c in f.choices %}<option value="{{ c }}" {% if v == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>
 {% elif f.type == 'bool' %}<input type="checkbox" name="{{ f.key }}" value="1" {% if v %}checked{% endif %} {{ d }}>
@@ -12,11 +14,11 @@
 </label>
 {% endmacro %}
 
-{% macro groups(fields, values, ro=False) %}
+{% macro groups(fields, values, ro=False, emps=[]) %}
 {% set ns = namespace(group=None) %}
 {% for f in fields %}
   {% if f.group != ns.group %}{% if ns.group is not none %}</fieldset>{% endif %}<fieldset class="grid"><legend>{{ f.group }}</legend>{% set ns.group = f.group %}{% endif %}
-  {{ field(f, values.get(f.key, ''), ro) }}
+  {{ field(f, values.get(f.key, ''), ro, emps) }}
 {% endfor %}</fieldset>
 {% endmacro %}
 

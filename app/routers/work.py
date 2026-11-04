@@ -1,11 +1,11 @@
 """Day-to-day pages: employees, monthly processing, attendance, salary and downloads."""
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse, Response
 
 from .. import hr, reports, services
-from ..core import attendance_engine as ae
+from ..core import attendance_engine as ae, importer
 from ..core.specs import EMPLOYEE_FIELDS
 from ..core.util import MONTHS
 from ..deps import Ctx, client_ip, csrf_protect, flash, form_values, render, work_ctx
@@ -47,6 +47,39 @@ def employees_export(kind: str, c: Ctx = C):
     rep = reports.employee_report([hr.row(e) for e in hr.list_employees(c.db, c.cid, active_only=False)])
     data = reports.report_pdf(_co(c), rep) if kind == "pdf" else reports.report_xlsx(_co(c), rep)
     return download(data, "Employee_Master", kind)
+
+
+@router.get("/employees/import")
+def employee_import_page(request: Request, c: Ctx = C):
+    hr.need_edit(c.db, c.user)
+    return render(request, "employee_import.html", c.user, c=c)
+
+
+@router.get("/employees/import/template.xlsx")
+def employee_template(c: Ctx = C):
+    return download(importer.build_template(), "Employee_Import_Template", "xlsx")
+
+
+@router.post("/employees/import", dependencies=[CSRF])
+async def employee_import(request: Request, file: UploadFile = File(...), update_existing: str = Form(""),
+                          c: Ctx = C):
+    hr.need_edit(c.db, c.user)
+    data = await file.read()
+    if len(data) > 2_000_000:
+        return render(request, "employee_import.html", c.user, c=c, errors=["File is larger than 2 MB."])
+    rows, errs = importer.parse_workbook(data)
+    if errs:
+        return render(request, "employee_import.html", c.user, c=c, errors=errs)
+    try:
+        res = hr.import_employees(c.db, c.user, c.cid, rows, bool(update_existing), client_ip(request))
+    except services.Invalid as ex:
+        return render(request, "employee_import.html", c.user, c=c,
+                      errors=["Nothing was imported. Fix these rows and upload again:"] + ex.errors)
+    msg = f"Imported {res['created']} new and updated {res['updated']} existing employee(s)."
+    if res["warnings"]:
+        msg += " Notes: " + " | ".join(res["warnings"][:8])
+    flash(request, msg)
+    return RedirectResponse("/employees", 303)
 
 
 def _emp_form(request, c, emp=None, raw=None, errors=None, warnings=None):

@@ -9,7 +9,7 @@
 <button class="btn">Switch</button></form>
 {% if current %}<div class="card"><h3>{{ current.name }}</h3>
 <p>Factory licence {{ current.factory_licence_no }}{% if current.licence_valid_to %}, valid to {{ current.licence_valid_to|dmy }}{% endif %} &middot; {{ current.city }}, {{ current.state }}</p>
-<p>Start with <a href="/employees">Employees</a>, then use <a href="/monthly">Monthly processing</a> each month: enter days worked, generate the attendance register, calculate salary and print pay slips.</p></div>{% endif %}
+<p>Start with <a href="/employees">Employees</a>, then use <a href="/monthly">Monthly processing</a> each month: enter days worked, generate the attendance register, calculate salary and print pay slips. Keep your statutory <a href="/registers">Factory Act registers</a> up to date.</p></div>{% endif %}
 {% else %}
 <div class="card"><p>No company is assigned to you yet.{% if user.is_super %} Create an organisation, then a company, under the menu above.{% else %} Ask the Super Admin to assign one.{% endif %}</p></div>
 {% endif %}

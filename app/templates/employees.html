@@ -2,7 +2,7 @@
 {% block body %}
 <h2>Employee Master &mdash; {{ c.company.name }}</h2>
 <div class="row">
-{% if c.can_edit %}<a class="btn" href="/employees/new">Add employee</a>{% endif %}
+{% if c.can_edit %}<a class="btn" href="/employees/new">Add employee</a> <a class="btn" href="/employees/import">Import from Excel</a>{% endif %}
 <form method="get" action="/employees" class="row"><input name="q" value="{{ q }}" placeholder="Search name / code">
 <label class="chk"><input type="checkbox" name="former" value="1" {% if former %}checked{% endif %}> include former employees</label><button class="btn">Search</button></form>
 <a href="/employees/export.pdf">PDF</a> <a href="/employees/export.xlsx">Excel</a></div>

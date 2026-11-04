@@ -13,3 +13,5 @@ button.link{background:none;border:0;color:#2f6db5;cursor:pointer;padding:0;marg
 .flash{padding:9px 12px;border-radius:4px;margin-bottom:12px}.flash.ok{background:#e2f4e5;border:1px solid #9fd3a8}.flash.err{background:#fde8e8;border:1px solid #e3a4a4}
 .muted{color:#667}.row{display:flex;gap:10px;align-items:end;margin-bottom:14px}.chk{display:block;padding:3px 8px}.locked{pointer-events:none;background:#eee}
 .flash.warn{background:#fff4d6;border:1px solid #e8c766}.btn.warnbtn{background:#b9770e}input.num{width:90px;text-align:right}td.r{text-align:right}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:12px}a.tile{text-decoration:none;color:inherit;display:block}a.tile:hover{border-color:#2f6db5}
+input.auto{background:#eee}button.link.danger{color:#b00020;margin:12px 0 0}

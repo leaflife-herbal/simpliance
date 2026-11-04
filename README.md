@@ -3,9 +3,13 @@
 FastAPI + Jinja2, SQLAlchemy 2, PostgreSQL. Business rules live in `app/core` (pure Python, tested without a
 database). See docs/DEPLOY.md.
 
-Build status
-* Step 1 (done): login/security, organisations with licence limits, companies, users (Super Admin only).
-* Step 2 (this build): employee master, monthly processing (days worked), attendance register generation and
-  correction, salary calculation (PF / ESI / Professional Tax / overtime), finalise/unlock, pay slips, salary register,
-  muster roll - PDF and Excel.
-* Step 3 (next): the five Factory Act registers (child labour, accidents, loss & damage, dangerous occurrences, other).
+Modules
+* Administration (Super Admin): organisations with licence limits, companies, users, audit log.
+* Employees: master, Excel import (template download), shift times, salary structure.
+* Monthly processing: days worked -> attendance register (natural in/out times) -> salary -> finalise/unlock.
+* Salary: PF / ESI / Professional Tax / overtime, pay slips, salary register, muster roll - PDF and Excel.
+* Factory Act registers: child & adolescent workers, accidents, loss & damage, dangerous occurrences, other
+  occurrences - rule checks, print entry, PDF and Excel.
+
+Tests: `python -m unittest tests.test_core_pure tests.test_reports tests.test_changes tests.test_registers_pure`
+(no database needed); `APP_ENV=development python -m pytest tests -q` for the service tests (SQLite).

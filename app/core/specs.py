@@ -80,6 +80,8 @@ COMPANY_FIELDS = [
     F("wage_divisor", "Monthly salary divisor", "choice", True, ["Calendar days", "30 days", "26 days"],
       "Calendar days", group="Payroll settings"),
     F("hours_per_day", "Normal working hours per day", "number", True, default=8, group="Payroll settings"),
+    F("attendance_variation", "Attendance time variation in minutes (in-time up to X min early, out-time up to X min late; 0 = exact shift times)",
+      "int", default=10, group="Payroll settings"),
     F("pf_wage_ceiling", "PF wage ceiling (Rs.)", "number", True, default=15000, group="Payroll settings"),
     F("pf_on_actual", "PF on actual wages (ignore ceiling)", "bool", default=False, group="Payroll settings"),
     F("esi_threshold", "ESI wage threshold (Rs./month)", "number", True, default=21000, group="Payroll settings"),

@@ -4,7 +4,7 @@ from io import BytesIO
 
 from .core import attendance_engine as ae
 from .core.specs import EMPLOYEE_FIELDS
-from .core.util import MONTHS, fmt_date, num
+from .core.util import MONTHS, fmt_date, inr, num
 from .export import excel, pdf
 from .export.common import Report
 
@@ -96,3 +96,29 @@ def attendance_pdf(company, y, m, blocks):
 
 def attendance_xlsx(company, y, m, blocks, muster):
     return _buf(excel.attendance_xlsx, company, y, m, blocks, muster)
+
+
+def register_report(spec, rows, date_from="", date_to=""):
+    """rows: list of dicts. Columns are the fields flagged list_col in the spec."""
+    cols = [f for f in spec.fields if f.list_col]
+    headers = ["Sl."] + [f.label.replace(" (auto)", "") for f in cols]
+    data = [[i] + [_val(f, r.get(f.key)) for f in cols] for i, r in enumerate(rows, 1)]
+    sub = ""
+    if date_from or date_to:
+        sub = f"Period: {fmt_date(date_from) or 'start'} to {fmt_date(date_to) or 'date'}"
+    widths = [0.4] + [3 if f.type == "multiline" else 1.5 if f.type in ("text", "choice") else 1.1 for f in cols]
+    return Report(spec.title, headers, data, sub, widths)
+
+
+def register_detail(spec, row):
+    rows = [[f.label.replace(" (auto)", ""), _val(f, row.get(f.key))] for f in spec.fields]
+    return Report(spec.title + " - entry", ["Field", "Value"], rows, "", [1, 3], landscape=False, font_size=9)
+
+
+def display_rows(rep):
+    """Cell text for HTML tables (Indian digit grouping for whole numbers)."""
+    out = []
+    for r in rep.rows:
+        out.append([inr(v) if isinstance(v, int) and not isinstance(v, bool) else num(v) if isinstance(v, float) else v
+                    for v in r])
+    return out

@@ -22,7 +22,7 @@ Start command: `gunicorn app.main:app -k uvicorn.workers.UvicornWorker -w 1 -b 0
 Health check path: `/healthz`
 Environment variables: PYTHON_VERSION=3.12.3, APP_ENV=production, SECRET_KEY=<long random text>,
 DATABASE_URL=<Aiven avnadmin Service URI>, AIVEN_CA_CERT=<Aiven CA certificate text>,
-SUPERADMIN_USERNAME=<your login>, SUPERADMIN_PASSWORD=<10+ chars, letters and digits>.
+SUPERADMIN_USERNAME=<your login>, SUPERADMIN_PASSWORD=<6+ chars, letters and digits>.
 
 ## 5. First start
 Create Web Service > wait for "Live". Logs should show `bootstrap: Super Admin created`. Open the onrender.com URL,

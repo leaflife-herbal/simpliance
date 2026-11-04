@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
-from .core.specs import COMPANY_FIELDS, EMPLOYEE_FIELDS
+from .core.specs import COMPANY_FIELDS, EMPLOYEE_FIELDS, REGISTERS
 from .db import Base
 
 ROLE_SUPER, ROLE_OPERATOR, ROLE_VIEWER = "SUPER_ADMIN", "OPERATOR", "VIEWER"
@@ -216,3 +216,20 @@ class SalaryLine(Base):
     pf_employer = Column(Integer)
     esi_employer = Column(Integer)
     warning = Column(String(255))
+
+
+def _register_model(spec):
+    attrs = {"__tablename__": spec.table,
+             "id": Column(Integer, primary_key=True),
+             "company_id": Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False, index=True)}
+    for f in spec.fields:
+        attrs[f.key] = (Column(Integer, ForeignKey("employees.id", ondelete="SET NULL"))
+                        if f.type == "employee" else spec_column(f))
+    attrs.update(created_by=Column(Integer, ForeignKey("users.id")),
+                 created_at=Column(DateTime(timezone=True), server_default=func.now()),
+                 updated_at=Column(DateTime(timezone=True)))
+    return type("Register_" + spec.key, (Base,), attrs)
+
+
+# Factory Act registers: child labour, accidents, loss & damage, dangerous occurrences, other occurrences
+REGISTER_MODELS = {spec.key: _register_model(spec) for spec in REGISTERS}

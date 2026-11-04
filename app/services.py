@@ -148,6 +148,8 @@ def save_company(db, actor, org_id, raw, company_id=None, ip=None):
                        ("hours_per_day", "Working hours per day")):
             if not clean.get(k) or clean[k] <= 0:
                 errors.append(f"{lab} must be greater than zero")
+        if clean.get("attendance_variation") is not None and clean["attendance_variation"] > 60:
+            errors.append("Attendance time variation must be between 0 and 60 minutes")
         try:
             parse_pt_slabs(clean.get("pt_slabs"))
         except ValueError as e:

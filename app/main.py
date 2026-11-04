@@ -11,14 +11,15 @@ from starlette.middleware.sessions import SessionMiddleware
 from . import bootstrap, services, settings
 from .db import engine
 from .deps import LoginRequired, NoCompany, PasswordChangeRequired, flash
-from .routers import admin, auth, home, work
+from .routers import admin, auth, home, registers, work
 
 @asynccontextmanager
 async def lifespan(_app):
     # Pilot setup: create any missing tables at start-up (safe to repeat). Alembic migrations replace this later.
     from . import models  # noqa: F401
-    from .db import Base
+    from .db import Base, ensure_columns
     Base.metadata.create_all(engine)
+    ensure_columns(engine)
     try:
         print("bootstrap:", bootstrap.from_env())
     except Exception as e:   # never block start-up (e.g. weak password in env var); the message shows in Render logs
@@ -83,3 +84,4 @@ app.include_router(auth.router)
 app.include_router(home.router)
 app.include_router(admin.router)
 app.include_router(work.router)
+app.include_router(registers.router)

@@ -9,7 +9,7 @@
 <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="organisation_id" value="{{ org_id }}">
 {% if not target %}<label class="fld"><span>Username *</span><input name="username" value="{{ values.get('username','') }}"></label>{% else %}<p><b>{{ target.username }}</b></p>{% endif %}
 <label class="fld"><span>Full name *</span><input name="full_name" value="{{ target.full_name if target else values.get('full_name','') }}"></label>
-{% if not target %}<label class="fld"><span>Temporary password * (10+ chars, letters and digits)</span><input type="password" name="password" autocomplete="new-password"></label>{% endif %}
+{% if not target %}<label class="fld"><span>Temporary password * (6+ chars, letters and digits)</span><input type="password" name="password" autocomplete="new-password"></label>{% endif %}
 <label class="fld"><span>Role</span><select name="role">{% for v, l in roles %}<option value="{{ v }}" {% if (target.role if target else values.get('role')) == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></label>
 <label class="fld"><span>Can view / process salaries</span><input type="checkbox" name="can_salary" value="1" {% if (target.can_salary if target else values.get('can_salary')) %}checked{% endif %}></label>
 {% if target %}<label class="fld"><span>Account active</span><input type="checkbox" name="is_active" value="1" {% if target.is_active %}checked{% endif %}></label>{% endif %}

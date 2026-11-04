@@ -112,6 +112,48 @@ def save_employee(db, user, cid, raw, emp_id=None, ip=None, ignore_warnings=Fals
     return e
 
 
+def import_employees(db, user, cid, rows, update_existing=False, ip=None):
+    """rows: [(excel_row_number, raw dict)] from core.importer. All-or-nothing: any error imports nothing."""
+    need_edit(db, user)
+    existing = {e.emp_code.lower(): e for e in db.scalars(select(Employee).where(Employee.company_id == cid))}
+    seen, plan, errors, warnings = {}, [], [], []
+    for n, raw in rows:
+        clean, errs = clean_values(EMPLOYEE_FIELDS, raw)
+        row_w = []
+        if not errs:
+            e_, w_ = validators.employee(clean, cid, None)
+            errs += e_
+            row_w += w_
+        code = (clean.get("emp_code") or "").lower()
+        ex = None
+        if code:
+            if code in seen:
+                errs.append(f"employee code repeated (also on row {seen[code]})")
+            seen[code] = n
+            ex = existing.get(code)
+            if ex and not update_existing:
+                errs.append("employee code already exists (tick 'update existing' to overwrite)")
+        if errs:
+            errors.append(f"Row {n}: " + "; ".join(errs))
+        else:
+            plan.append((clean, ex))
+            warnings += [f"Row {n}: {w}" for w in row_w]
+    if errors:
+        raise Invalid(errors[:60] + ([f"... and {len(errors) - 60} more rows with errors"] if len(errors) > 60 else []))
+    created = updated = 0
+    for clean, ex in plan:
+        e = ex or Employee(company_id=cid, created_by=user.id)
+        for k, v in clean.items():
+            setattr(e, k, v)
+        e.updated_at = now()
+        db.add(e)
+        updated += 1 if ex else 0
+        created += 0 if ex else 1
+    db.flush()
+    services.audit(db, user, "IMPORT_EMPLOYEES", "employees", None, {"created": created, "updated": updated}, ip, cid)
+    return {"created": created, "updated": updated, "warnings": warnings}
+
+
 def eligible(db, cid, y, m):
     """Employees on the rolls at any time during the month."""
     start, end = month_bounds(y, m)
@@ -188,11 +230,13 @@ def generate_attendance(db, user, cid, y, m):
     _need_unlocked(db, cid, y, m)
     inputs = {i["employee_id"]: i for i in get_inputs(db, cid, y, m)}
     emps = eligible(db, cid, y, m)
+    var = db.get(Company, cid).attendance_variation
+    var = 10 if var is None else int(var)
     built, problems = {}, []
     for e in emps:
         try:
             built[e.id] = ae.build_month(y, m, float(inputs[e.id]["days_worked"]), e.weekly_off, e.shift_in,
-                                         e.shift_out, e.date_of_joining, e.date_of_leaving)
+                                         e.shift_out, e.date_of_joining, e.date_of_leaving, var, f"{cid}-{e.id}")
         except ValueError as ex:
             problems.append(f"{e.emp_code} {e.name}: {ex}")
     if problems:

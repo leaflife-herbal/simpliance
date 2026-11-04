@@ -42,3 +42,19 @@ def set_tenant(session, company_id):
     """Scope this transaction to one company for Postgres row-level security (used by business tables)."""
     if engine.dialect.name == "postgresql":
         session.execute(text("SELECT set_config('app.company_id', :v, true)"), {"v": str(int(company_id))})
+
+
+def ensure_columns(eng):
+    """Pilot-stage schema sync: add columns that exist in the models but not yet in the database (nullable only).
+    Replace with Alembic migrations when the product stabilises."""
+    from sqlalchemy import inspect
+    insp = inspect(eng)
+    with eng.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if not insp.has_table(table.name):
+                continue
+            have = {c["name"] for c in insp.get_columns(table.name)}
+            for col in table.columns:
+                if col.name not in have and col.nullable:
+                    conn.execute(text(f"ALTER TABLE {table.name} ADD COLUMN {col.name} "
+                                      f"{col.type.compile(dialect=eng.dialect)}"))
