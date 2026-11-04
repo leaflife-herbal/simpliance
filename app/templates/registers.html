@@ -1,8 +1,0 @@
-{% extends "base.html" %}{% block title %}Registers{% endblock %}
-{% block body %}
-<h2>Factory Act Registers &mdash; {{ c.company.name }}</h2>
-<div class="cards">
-{% for s in specs %}<a class="card tile" href="/registers/{{ s.key }}"><b>{{ s.title }}</b><br><span class="muted">{{ s.help }}</span></a>{% endfor %}
-</div>
-<p class="muted">Rule checks are indicative summaries of the Factories Act, 1948 and the Child and Adolescent Labour Act, 1986. Always confirm against your State Factories Rules.</p>
-{% endblock %}
