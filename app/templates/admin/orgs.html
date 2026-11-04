@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Organisations{% endblock %}
+{% block body %}
+<h2>Organisations (customers and licence limits)</h2>
+<div class="card"><form method="post" action="/admin/organisations" class="grid">
+<input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="org_id" value="{{ edit.id if edit else 0 }}">
+<label class="fld"><span>Name *</span><input name="name" value="{{ edit.name if edit else '' }}"></label>
+<label class="fld"><span>Max companies</span><input type="number" min="1" name="max_companies" value="{{ edit.max_companies if edit else 1 }}"></label>
+<label class="fld"><span>Max users</span><input type="number" min="1" name="max_users" value="{{ edit.max_users if edit else 5 }}"></label>
+<label class="fld"><span>Subscription valid until</span><input type="date" name="valid_until" value="{{ edit.valid_until.isoformat() if edit and edit.valid_until else '' }}"></label>
+<label class="fld"><span>Active</span><input type="checkbox" name="is_active" value="1" {% if not edit or edit.is_active %}checked{% endif %}></label>
+<div><button class="btn">{{ 'Update' if edit else 'Create organisation' }}</button></div></form></div>
+<table><tr><th>Name</th><th>Companies</th><th>Users</th><th>Valid until</th><th>Status</th><th></th></tr>
+{% for o in orgs %}<tr><td>{{ o.name }}</td><td>{{ o.max_companies }}</td><td>{{ o.max_users }}</td><td>{{ o.valid_until|dmy }}</td>
+<td>{{ 'Active' if o.is_active else 'Inactive' }}</td><td><a href="/admin/organisations?edit={{ o.id }}">Edit</a> &middot; <a href="/admin/companies/new?org_id={{ o.id }}">Add company</a> &middot; <a href="/admin/users/new?org_id={{ o.id }}">Add user</a></td></tr>{% endfor %}</table>
+{% endblock %}

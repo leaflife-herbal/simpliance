@@ -1,0 +1,12 @@
+{% macro field(f, v) %}
+<label class="fld"><span>{{ f.label }}{% if f.required %} *{% endif %}</span>
+{% if f.type == 'multiline' %}<textarea name="{{ f.key }}" rows="3">{{ v }}</textarea>
+{% elif f.type == 'choice' %}<select name="{{ f.key }}">{% if not f.required %}<option value=""></option>{% endif %}
+  {% for c in f.choices %}<option value="{{ c }}" {% if v == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>
+{% elif f.type == 'bool' %}<input type="checkbox" name="{{ f.key }}" value="1" {% if v %}checked{% endif %}>
+{% elif f.type == 'date' %}<input type="date" name="{{ f.key }}" value="{{ v }}">
+{% elif f.type == 'time' %}<input type="time" name="{{ f.key }}" value="{{ v }}">
+{% elif f.type in ('int', 'number') %}<input type="number" step="{{ '1' if f.type == 'int' else 'any' }}" min="0" name="{{ f.key }}" value="{{ v }}">
+{% else %}<input type="text" name="{{ f.key }}" value="{{ v }}">{% endif %}
+</label>
+{% endmacro %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Users{% endblock %}
+{% block body %}
+<h2>Users</h2><p><a class="btn" href="/admin/users/new">Create user</a></p>
+<table><tr><th>Username</th><th>Name</th><th>Role</th><th>Organisation</th><th>Salary access</th><th>Status</th><th>Last sign-in</th><th></th></tr>
+{% for u in rows %}<tr><td>{{ u.username }}</td><td>{{ u.full_name }}</td><td>{{ ROLE_LABELS[u.role] }}</td><td>{{ orgs.get(u.organisation_id, '(platform)') }}</td>
+<td>{{ 'Yes' if u.can_salary else 'No' }}</td><td>{{ 'Active' if u.is_active else 'Disabled' }}{% if u.locked_until %} (locked){% endif %}</td>
+<td>{{ u.last_login.strftime('%d-%m-%Y %H:%M') if u.last_login else '' }}</td>
+<td>{% if not u.is_super %}<a href="/admin/users/{{ u.id }}">Edit</a>
+<form method="post" action="/admin/users/{{ u.id }}/reset" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf }}">
+<input type="password" name="new_password" placeholder="temporary password" class="small"><button class="link">Reset</button></form>{% endif %}</td></tr>{% endfor %}</table>
+{% endblock %}

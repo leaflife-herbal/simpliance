@@ -1,5 +1,5 @@
 # Render Blueprint - FREE plan version. Create the Aiven PostgreSQL service first (see docs/DEPLOY.md).
-# Free web services have no Shell and no pre-deploy command, so migrations run in the build step and the
+# Free web services have no Shell and no pre-deploy command, so tables are created at start-up and the
 # Super Admin is created at start-up from environment variables.
 services:
   - type: web
@@ -7,7 +7,7 @@ services:
     runtime: python
     region: singapore          # closest Render region to India
     plan: free                 # change to "starter" when you have paying users (no sleep)
-    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app.main:app -k uvicorn.workers.UvicornWorker -w 1 -b 0.0.0.0:$PORT --forwarded-allow-ips="*" --timeout 120
     healthCheckPath: /healthz
     envVars:
