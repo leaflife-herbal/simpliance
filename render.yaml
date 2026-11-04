@@ -1,0 +1,27 @@
+# Render Blueprint - FREE plan version. Create the Aiven PostgreSQL service first (see docs/DEPLOY.md).
+# Free web services have no Shell and no pre-deploy command, so migrations run in the build step and the
+# Super Admin is created at start-up from environment variables.
+services:
+  - type: web
+    name: factory-compliance
+    runtime: python
+    region: singapore          # closest Render region to India
+    plan: free                 # change to "starter" when you have paying users (no sleep)
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: gunicorn app.main:app -k uvicorn.workers.UvicornWorker -w 1 -b 0.0.0.0:$PORT --forwarded-allow-ips="*" --timeout 120
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false            # Aiven Service URI (paste in the Render dashboard)
+      - key: AIVEN_CA_CERT
+        sync: false            # Aiven CA certificate text (optional but recommended)
+      - key: SUPERADMIN_USERNAME
+        sync: false
+      - key: SUPERADMIN_PASSWORD
+        sync: false            # remove after the first successful start

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+<link rel="stylesheet" href="/static/app.css"></head>
+<body>
+{% if user %}
+<header class="top">
+  <a class="brand" href="/">{{ APP_NAME }}</a>
+  <nav>
+    <a href="/">Home</a>
+    {% if user.is_super %}
+      <a href="/admin/organisations">Organisations</a><a href="/admin/companies">Companies</a>
+      <a href="/admin/users">Users</a><a href="/admin/audit">Audit log</a>
+    {% endif %}
+  </nav>
+  <span class="who">{{ user.full_name }} ({{ ROLE_LABELS[user.role] }})
+    <a href="/account/password">Change password</a>
+    <form method="post" action="/logout" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="link">Sign out</button></form>
+  </span>
+</header>
+{% endif %}
+<main>
+  {% for kind, msg in flash %}<div class="flash {{ kind }}">{{ msg }}</div>{% endfor %}
+  {% if errors %}<div class="flash err"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+  {% block body %}{% endblock %}
+</main>
+</body></html>
