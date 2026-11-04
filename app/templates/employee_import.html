@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Import employees{% endblock %}
+{% block body %}
+<h2>Import employees from Excel &mdash; {{ c.company.name }}</h2>
+<div class="card">
+<ol>
+<li><a class="btn" href="/employees/import/template.xlsx">Download the Excel template</a> (it has a sheet of instructions and drop-down lists).</li>
+<li>Fill one employee per row on the <b>Employees</b> sheet and save the file as .xlsx.</li>
+<li>Upload it below. If any row has a problem nothing is imported, and you get a list of the rows to fix.</li>
+</ol>
+<form method="post" action="/employees/import" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf }}">
+<label class="fld"><span>Excel file (.xlsx, up to 500 employees)</span><input type="file" name="file" accept=".xlsx" required></label>
+<label class="chk"><input type="checkbox" name="update_existing" value="1"> Update existing employees that have the same employee code</label>
+<p><button class="btn">Import</button> <a href="/employees">Cancel</a></p></form></div>
+{% endblock %}
