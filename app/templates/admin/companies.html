@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block title %}Companies{% endblock %}
+{% block body %}
+<h2>Companies</h2><p><a class="btn" href="/admin/companies/new">New company</a></p>
+<table><tr><th>Name</th><th>Code</th><th>Organisation</th><th>Factory licence</th><th>City</th><th>Status</th><th></th></tr>
+{% for c in rows %}<tr><td>{{ c.name }}</td><td>{{ c.short_code }}</td><td>{{ orgs[c.organisation_id] }}</td><td>{{ c.factory_licence_no }}</td><td>{{ c.city }}</td>
+<td>{{ 'Active' if c.is_active else 'Inactive' }}</td>
+<td><a href="/admin/companies/{{ c.id }}">Edit</a> &middot; <a href="/admin/backup/{{ c.id }}.zip">Backup (CSV zip)</a>
+<form method="post" action="/admin/companies/{{ c.id }}/toggle" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="link">{{ 'Deactivate' if c.is_active else 'Activate' }}</button></form></td></tr>{% endfor %}</table>
+{% endblock %}

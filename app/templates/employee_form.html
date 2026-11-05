@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% from "fields.html" import groups %}{% block title %}Employee{% endblock %}
+{% block body %}
+<h2>{{ ('Edit employee' if c.can_edit else 'Employee') if emp else 'New employee' }}</h2>
+{% if warnings %}<div class="flash warn"><b>Please check:</b><ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+{% if c.can_edit %}<p>If these are correct, use <b>Save anyway</b>.</p>{% endif %}</div>{% endif %}
+<form method="post" action="{{ '/employees/' ~ emp.id if emp else '/employees/new' }}">
+<input type="hidden" name="csrf_token" value="{{ csrf }}">
+{{ groups(fields, values, not c.can_edit) }}
+{% if c.can_edit %}<button class="btn">Save</button>{% if warnings %} <button class="btn warnbtn" name="ignore_warnings" value="1">Save anyway</button>{% endif %}{% endif %}
+<a href="/employees">Back</a></form>
+{% endblock %}

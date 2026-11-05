@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}{{ spec.title }}{% endblock %}
+{% block body %}
+<h2>{{ spec.title }} &mdash; {{ c.company.name }}</h2>
+<p class="muted">{{ spec.help }}</p>
+<div class="row">
+{% if c.can_edit %}<a class="btn" href="/registers/{{ spec.key }}/new">Add entry</a>{% endif %}
+<form method="get" action="/registers/{{ spec.key }}" class="row">
+<label>From <input type="date" name="from" value="{{ date_from }}"></label><label>To <input type="date" name="to" value="{{ date_to }}"></label>
+<button class="btn">Filter</button> <a href="/registers/{{ spec.key }}">Clear</a></form>
+<a href="/registers/{{ spec.key }}/file/list.pdf?from={{ date_from }}&to={{ date_to }}">Print / PDF</a>
+<a href="/registers/{{ spec.key }}/file/list.xlsx?from={{ date_from }}&to={{ date_to }}">Excel</a></div>
+<table><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}<th></th></tr>
+{% for rid, cells in table %}<tr>{% for v in cells %}<td>{{ v }}</td>{% endfor %}
+<td><a href="/registers/{{ spec.key }}/{{ rid }}">{{ 'Edit' if c.can_edit else 'View' }}</a> &middot; <a href="/registers/{{ spec.key }}/file/entry.pdf?id={{ rid }}">Print</a></td></tr>
+{% else %}<tr><td colspan="{{ headers|length + 1 }}" class="muted">No entries.</td></tr>{% endfor %}</table>
+{% endblock %}
