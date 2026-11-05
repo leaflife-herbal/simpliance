@@ -1,0 +1,32 @@
+{% extends "print_base.html" %}{% block title %}Pay slips{% endblock %}
+{% block controls %}
+<form method="get" action="{{ path }}" class="inlineform">
+<input type="hidden" name="year" value="{{ y }}"><input type="hidden" name="month" value="{{ m }}"><input type="hidden" name="emp" value="{{ emp }}">
+Language <select name="lang">{% for k, n in LANG_NAMES.items() %}<option value="{{ k }}" {% if lang == k %}selected{% endif %}>{{ 'English only' if k == 'en' else 'English + ' ~ n }}</option>{% endfor %}</select>
+<button class="pbtn">Update</button></form>
+{% endblock %}
+{% block page %}
+{% for l in lines %}
+<div class="sheet slip">
+<h1>{{ co.name }}</h1>
+<p class="c">{{ co.address1 }}, {{ co.city }}, {{ co.state }}</p>
+<h2>{{ bi('payslip', lang) }} &mdash; {{ MONTHS[m - 1] }} {{ y }}</h2>
+<table class="info">
+<tr><th>{{ bi('emp_code', lang) }}</th><td>{{ l.emp_code }}</td><th>{{ bi('name', lang) }}</th><td>{{ l.emp_name }}{% if lang != 'en' and l.name_local %}<br>{{ l.name_local }}{% endif %}</td></tr>
+<tr><th>{{ bi('designation', lang) }}</th><td>{{ l.designation or '' }}</td><th>{{ bi('department', lang) }}</th><td>{{ l.department or '' }}</td></tr>
+<tr><th>{{ bi('days_month', lang) }}</th><td>{{ l.days_in_month }}</td><th>{{ bi('days_paid', lang) }}</th><td>{{ l.paid_days|num }}</td></tr>
+<tr><th>{{ bi('present', lang) }}</th><td>{{ l.present_days|num }}</td><th>{{ bi('absent', lang) }}</th><td>{{ l.absent_days|num }}</td></tr>
+<tr><th>{{ bi('offs', lang) }}</th><td>{{ l.weekly_offs|num }}</td><th>{{ bi('ot_hours', lang) }}</th><td>{{ l.ot_hours|num }}</td></tr></table>
+<table class="money"><tr><th>{{ bi('earnings', lang) }}</th><th>Rs.</th><th>{{ bi('deductions', lang) }}</th><th>Rs.</th></tr>
+<tr><td>{{ bi('basic', lang) }}</td><td class="r">{{ l.earned_basic|inr }}</td><td>{{ bi('pf', lang) }}</td><td class="r">{{ l.pf_employee|inr }}</td></tr>
+<tr><td>{{ bi('da', lang) }}</td><td class="r">{{ l.earned_da|inr }}</td><td>{{ bi('esi', lang) }}</td><td class="r">{{ l.esi_employee|inr }}</td></tr>
+<tr><td>{{ bi('hra', lang) }}</td><td class="r">{{ l.earned_hra|inr }}</td><td>{{ bi('pt', lang) }}</td><td class="r">{{ l.prof_tax|inr }}</td></tr>
+<tr><td>{{ bi('other_allow', lang) }}</td><td class="r">{{ l.earned_other|inr }}</td><td>{{ bi('advance', lang) }}</td><td class="r">{{ l.advance|inr }}</td></tr>
+<tr><td>{{ bi('overtime', lang) }}</td><td class="r">{{ l.ot_amount|inr }}</td><td>{{ bi('other_ded', lang) }}</td><td class="r">{{ l.other_deduction|inr }}</td></tr>
+<tr class="tot"><td>{{ bi('gross', lang) }}</td><td class="r">{{ l.gross|inr }}</td><td>{{ bi('total_ded', lang) }}</td><td class="r">{{ l.total_deductions|inr }}</td></tr>
+<tr class="net"><td>{{ bi('net', lang) }}</td><td class="r" colspan="3">Rs. {{ l.net_pay|inr }}</td></tr></table>
+<p>{{ bi('in_words', lang) }}: {{ l.words }}</p>
+<div class="sign"><div>{{ bi('emp_sign', lang) }}</div><div>{{ bi('auth_sign', lang) }}</div></div>
+</div>
+{% endfor %}
+{% endblock %}

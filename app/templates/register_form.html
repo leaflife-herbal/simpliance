@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% from "fields.html" import groups %}{% block title %}{{ spec.title }}{% endblock %}
+{% block body %}
+<h2>{{ spec.title }}: {{ ('Edit entry' if c.can_edit else 'Entry') if obj else 'New entry' }}</h2>
+{% if warnings %}<div class="flash warn"><b>Please check:</b><ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+{% if c.can_edit %}<p>If these are correct, use <b>Save anyway</b>.</p>{% endif %}</div>{% endif %}
+<form method="post" action="{{ '/registers/' ~ spec.key ~ '/' ~ obj.id if obj else '/registers/' ~ spec.key ~ '/new' }}">
+<input type="hidden" name="csrf_token" value="{{ csrf }}">
+{{ groups(fields, values, not c.can_edit, emps) }}
+{% if c.can_edit %}<button class="btn">Save</button>{% if warnings %} <button class="btn warnbtn" name="ignore_warnings" value="1">Save anyway</button>{% endif %}{% endif %}
+<a href="/registers/{{ spec.key }}">Back</a></form>
+{% if obj and c.can_edit %}<form method="post" action="/registers/{{ spec.key }}/{{ obj.id }}/delete" class="inline">
+<input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="link danger">Delete this entry</button></form>{% endif %}
+{% endblock %}

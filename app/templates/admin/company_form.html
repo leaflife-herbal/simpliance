@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% from "fields.html" import field %}{% block title %}Company{% endblock %}
+{% block body %}
+<h2>{{ 'Edit company' if company else 'New company' }}</h2>
+<form method="post" action="{{ '/admin/companies/' ~ company.id if company else '/admin/companies/new' }}">
+<input type="hidden" name="csrf_token" value="{{ csrf }}">
+<fieldset><legend>Organisation</legend>
+<label class="fld"><span>Organisation *</span>
+<select name="organisation_id" {% if company %}class="locked"{% endif %}>{% for o in orgs %}{% if not company or company.organisation_id == o.id %}<option value="{{ o.id }}" {% if org_id == o.id %}selected{% endif %}>{{ o.name }}</option>{% endif %}{% endfor %}</select></label></fieldset>
+{% set ns = namespace(group=None) %}
+{% for f in fields %}
+  {% if f.group != ns.group %}{% if ns.group is not none %}</fieldset>{% endif %}<fieldset class="grid"><legend>{{ f.group }}</legend>{% set ns.group = f.group %}{% endif %}
+  {{ field(f, values.get(f.key, '')) }}
+{% endfor %}</fieldset>
+<button class="btn">Save company</button> <a href="/admin/companies">Cancel</a></form>
+{% endblock %}
