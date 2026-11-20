@@ -16,3 +16,5 @@ Modules
 
 Tests: `python -m unittest tests.test_core_pure tests.test_reports tests.test_changes tests.test_registers_pure tests.test_pending`
 (no database needed); `APP_ENV=development python -m pytest tests -q` for the service tests (SQLite).
+
+Portal files: EPFO ECR 2.0 text file (#~# separated) + Excel check copy, ESIC monthly contribution Excel (all text).
