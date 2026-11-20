@@ -15,6 +15,11 @@
 <p>Print (English + Hindi / Punjabi per company setting): <a href="/print/slips?year={{ y }}&month={{ m }}">All pay slips</a> &middot;
 Statements: <a href="/salary/file/pf.pdf?year={{ y }}&month={{ m }}">PF (PDF)</a> <a href="/salary/file/pf.xlsx?year={{ y }}&month={{ m }}">(Excel)</a> &middot;
 <a href="/salary/file/esi.pdf?year={{ y }}&month={{ m }}">ESI (PDF)</a> <a href="/salary/file/esi.xlsx?year={{ y }}&month={{ m }}">(Excel)</a></p>
+<div class="card"><b>Files for the government portals</b>
+<p><a class="btn" href="/salary/file/ecr.txt?year={{ y }}&month={{ m }}">EPFO ECR text file (.txt)</a>
+<a href="/salary/file/ecr.xlsx?year={{ y }}&month={{ m }}">ECR as Excel (to check)</a> &nbsp;|&nbsp;
+<a class="btn" href="/salary/file/esic.xlsx?year={{ y }}&month={{ m }}">ESIC monthly contribution (Excel)</a></p>
+<p class="muted">Open the Excel files first and read the Notes sheet: members missing a UAN or IP number are left out and listed there. EPFO takes a text file (fields separated by #~#); ESIC takes the Excel sheet.</p></div>
 <table><tr><th>Code</th><th>Employee</th><th>Days paid</th><th>Gross</th><th>PF</th><th>ESI</th><th>PT</th><th>Advance + other</th><th>Net pay</th><th>Note</th><th></th></tr>
 {% for l in lines %}<tr><td>{{ l.emp_code }}</td><td>{{ l.emp_name }}</td><td class="r">{{ l.paid_days|num }}</td><td class="r">{{ l.gross|inr }}</td><td class="r">{{ l.pf_employee|inr }}</td><td class="r">{{ l.esi_employee|inr }}</td><td class="r">{{ l.prof_tax|inr }}</td><td class="r">{{ (l.advance + l.other_deduction)|inr }}</td><td class="r"><b>{{ l.net_pay|inr }}</b></td><td>{{ l.warning or '' }}</td>
 <td><a href="/salary/file/slips.pdf?year={{ y }}&month={{ m }}&emp={{ l.employee_id }}">Slip</a> &middot; <a href="/print/slips?year={{ y }}&month={{ m }}&emp={{ l.employee_id }}">Print</a></td></tr>{% endfor %}</table>
