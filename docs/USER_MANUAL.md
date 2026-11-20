@@ -31,6 +31,16 @@ Passwords: at least 6 characters with a letter and a digit. 5 wrong attempts loc
   Red messages must be fixed; yellow warnings can be saved after confirming.
 * **Notice of work periods**: bilingual notice built from your employees' shifts; type the rest interval and print.
 
+## 3a. Files for the PF and ESI websites
+On the **Salary** page (after calculating the month) the box **Files for the government portals** gives:
+* **EPFO ECR text file (.txt)**: the file the EPFO unified portal accepts (11 fields per member separated by `#~#`).
+  Also **ECR as Excel** to read or edit first. Members without a 12-digit UAN are left out and listed on the Notes sheet.
+* **ESIC monthly contribution (Excel)**: IP number, name, days paid, wages, reason code and last working day, all as
+  text. Members without a 10-digit IP number are left out and listed on the Notes sheet.
+Always open the Excel file and read the Notes sheet before uploading. Portal formats change: if a portal rejects a file,
+compare with the template/help file on the portal itself and tell us what it says. Employer-side challan payment is still
+done on the portals.
+
 ## 4. Backups (Super Admin)
 Companies > **Backup (CSV zip)** downloads all of that company's data as CSV files (opens in Excel). Do this weekly while
 on the free database plan, and keep the zip safe. It is a safety copy, not a one-click restore.
