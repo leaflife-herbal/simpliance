@@ -168,3 +168,71 @@ def leave_report(rows, year, n):
     return Report("Earned Leave Register", headers, data,
                   f"Year {year} - 1 day for every {n} days worked; half a day or more rounds up",
                   [1, 3, 1, 1.2, 1, 1.2, 1], False, 9)
+
+
+# ------------------------------------------------------------------ files for the EPFO / ESIC portals
+def ecr_text_bytes(rows):
+    from .core.statutory import ecr_text
+    return ecr_text(rows).encode("ascii", "replace")
+
+
+def _bold_header(ws):
+    from openpyxl.styles import Font
+    for c in ws[1]:
+        c.font = Font(bold=True)
+
+
+def ecr_xlsx(rows, warns):
+    from openpyxl import Workbook
+    from .core.statutory import ECR_HEADERS
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "ECR"
+    ws.append(ECR_HEADERS)
+    for r in rows:
+        ws.append([str(r[0])] + list(r[1:]))        # UAN kept as text
+    _bold_header(ws)
+    for i in range(1, 12):
+        ws.column_dimensions[chr(64 + i)].width = 22
+    note = wb.create_sheet("Notes")
+    note.append(["EPFO ECR 2.0: the portal needs a TEXT file with these 11 fields separated by #~# (no header row)."])
+    note.append(["Use 'EPFO ECR text file' on the Salary page for that file. This sheet is for checking and editing."])
+    note.append(["Check these before uploading:"])
+    for w in warns:
+        note.append([w])
+    note.column_dimensions["A"].width = 120
+    b = BytesIO()
+    wb.save(b)
+    return b.getvalue()
+
+
+def esic_xlsx(rows, warns):
+    """Every cell is text, as the ESIC portal's template requires."""
+    from openpyxl import Workbook
+    from .core.statutory import ESIC_HEADERS, ESIC_REASONS
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "MC"
+    ws.append(ESIC_HEADERS)
+    for r in rows:
+        ws.append([str(v) for v in r])
+    for row in ws.iter_rows(min_row=1, max_row=max(2, len(rows) + 1)):
+        for c in row:
+            c.number_format = "@"
+    _bold_header(ws)
+    for col, w in zip("ABCDEF", (16, 34, 26, 20, 28, 24)):
+        ws.column_dimensions[col].width = w
+    note = wb.create_sheet("Notes")
+    note.append(["Upload to ESIC: Monthly Contribution > File Monthly Contribution > Upload Excel (employer login)."])
+    note.append(["If the portal rejects this file, paste columns A-F into the template downloaded from the portal (save as .xls if it asks)."])
+    note.append(["Last working day is needed only when days = 0 and the reason is left service, retired, out of coverage, expired or retrenchment."])
+    note.append(["Reason codes (check against the portal's own template):"])
+    for k, v in ESIC_REASONS.items():
+        note.append([f"{k} = {v}"])
+    note.append(["Check before uploading:"])
+    for w in warns:
+        note.append([w])
+    note.column_dimensions["A"].width = 120
+    b = BytesIO()
+    wb.save(b)
+    return b.getvalue()
