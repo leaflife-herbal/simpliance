@@ -265,6 +265,17 @@ def salary_file(kind: str, year: int = 0, month: int = 0, emp: int = 0, c: Ctx =
         if kind == "slips.pdf":
             return download(reports.slips_pdf(co, y, m, chosen), "Salary_Slips_" + name, "pdf")
         return download(reports.slips_xlsx(co, y, m, chosen), "Salary_Slips_" + name, "xlsx")
+    if kind in ("ecr.txt", "ecr.xlsx", "esic.xlsx"):
+        from ..core import statutory
+        emps = {e.id: hr.row(e) for e in hr.list_employees(c.db, c.cid, active_only=False)}
+        if kind == "esic.xlsx":
+            rows, warns = statutory.esic_rows(lines, emps, y, m)
+            return download(reports.esic_xlsx(rows, warns), "ESIC_MC_" + name, "xlsx")
+        rows, warns = statutory.ecr_rows(lines, emps, float(co["pf_wage_ceiling"] or 15000), bool(co["pf_on_actual"]))
+        if kind == "ecr.xlsx":
+            return download(reports.ecr_xlsx(rows, warns), "EPFO_ECR_" + name, "xlsx")
+        return Response(reports.ecr_text_bytes(rows), media_type="text/plain",
+                        headers={"Content-Disposition": f'attachment; filename="ECR_{name}.txt"'})
     if kind in ("pf.pdf", "pf.xlsx", "esi.pdf", "esi.xlsx"):
         rep = (reports.pf_statement(lines, float(co["pf_wage_ceiling"] or 15000), y, m) if kind.startswith("pf")
                else reports.esi_statement(lines, y, m))
